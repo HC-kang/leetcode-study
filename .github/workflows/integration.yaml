@@ -16,8 +16,12 @@ jobs:
         id: pr-labels
         run: |
           pr_number="${{ github.event.pull_request.number }}"
-          labels=$(gh pr view $pr_number --json labels -q '.labels[].name' || echo "")
-          echo "labels=$labels" >> $GITHUB_OUTPUT
+          labels_json=$(gh pr view $pr_number --json labels -q '.labels[].name')
+          if [ -n "$labels_json" ]; then
+            echo "has_maintenance=$(echo $labels_json | grep -q 'maintenance' && echo 'true' || echo 'false')" >> $GITHUB_OUTPUT
+          else
+            echo "has_maintenance=false" >> $GITHUB_OUTPUT
+          fi
         env:
           GH_TOKEN: ${{ github.token }}
 
@@ -26,7 +30,7 @@ jobs:
           # 필요한 값들 미리 설정
           pr_author="${{ github.event.pull_request.user.login }}"
           pr_number="${{ github.event.pull_request.number }}"
-          pr_labels=$(gh pr view $pr_number --json labels -q '.labels[].name' || echo "")
+          has_maintenance=$(gh pr view $pr_number --json labels -q '.labels[].name | contains(["maintenance"])')
 
           # 따옴표를 제거하고 파일 목록 가져오기
           files=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | tr -d '"')
@@ -77,7 +81,7 @@ jobs:
           done
 
           # maintenance 라벨이 없는 경우에만 파일명 규칙 체크
-          if [[ ! "$pr_labels" =~ "maintenance" ]]; then
+          if [ "$has_maintenance" != "true" ]; then
             echo -e "\n## 파일명 규칙 위반" >> $GITHUB_STEP_SUMMARY
             for file in $files; do
               if [ -f "$file" ]; then
