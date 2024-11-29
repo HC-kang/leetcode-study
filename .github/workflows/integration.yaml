@@ -79,12 +79,8 @@ jobs:
                 filename=$(basename "$file" | tr -d '"')
                 github_username="${{ github.event.pull_request.user.login }}"
 
-                # 문자열 비교를 위해 따옴표로 감싸기
-                filename_quoted="$filename"
-                username_quoted="$github_username"
-
                 # 파일명이 GitHub계정명인지 확인
-                if [[ ! "$filename_quoted" =~ ^$username_quoted ]]; then
+                if [[ "${filename}" != ${github_username}* ]]; then
                   echo "- $file (파일명은 '$github_username'로 해주셔야 합니다)" >> $GITHUB_STEP_SUMMARY
                   success=false
                 fi
