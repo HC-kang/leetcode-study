@@ -30,7 +30,11 @@ jobs:
           # 필요한 값들 미리 설정
           pr_author="${{ github.event.pull_request.user.login }}"
           pr_number="${{ github.event.pull_request.number }}"
-          has_maintenance=$(gh pr view $pr_number --json labels -q '.labels[].name | contains(["maintenance"])')
+          labels_json=$(gh pr view $pr_number --json labels -q '.labels[].name')
+          has_maintenance=false
+          if echo "$labels_json" | grep -q "maintenance"; then
+            has_maintenance=true
+          fi
 
           # 따옴표를 제거하고 파일 목록 가져오기
           files=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | tr -d '"')
