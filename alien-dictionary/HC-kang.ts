@@ -64,4 +64,5 @@ function alienOrder(words: string[]): string {
   return result.length === Object.keys(inDegree).length //
     ? result.join('') 
     : '';
+    
 }
