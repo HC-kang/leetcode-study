@@ -15,7 +15,8 @@ jobs:
       - name: Get PR labels
         id: pr-labels
         run: |
-          labels=$(gh pr view ${{ github.event.pull_request.number }} --json labels -q '.labels[].name' || echo "")
+          pr_number="${{ github.event.pull_request.number }}"
+          labels=$(gh pr view $pr_number --json labels -q '.labels[].name' || echo "")
           echo "labels=$labels" >> $GITHUB_OUTPUT
         env:
           GH_TOKEN: ${{ github.token }}
@@ -24,7 +25,8 @@ jobs:
         run: |
           # 필요한 값들 미리 설정
           pr_author="${{ github.event.pull_request.user.login }}"
-          pr_labels=$(gh pr view ${{ github.event.pull_request.number }} --json labels -q '.labels[].name' || echo "")
+          pr_number="${{ github.event.pull_request.number }}"
+          pr_labels=$(gh pr view $pr_number --json labels -q '.labels[].name' || echo "")
 
           # 따옴표를 제거하고 파일 목록 가져오기
           files=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | tr -d '"')
